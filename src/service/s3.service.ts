@@ -7,7 +7,7 @@ export class S3Service {
 
     constructor() {
         this.s3 = new S3({
-            region: 'us-east-1', 
+            region: 'us-west-2', 
             accessKeyId: process.env.ACCESS_KEY_ID,
             secretAccessKey: process.env.PRIVATE_KEY,
         });
@@ -16,9 +16,10 @@ export class S3Service {
     async saveFile(fileName, fileContent) {
         try {
             const params = {
-                Bucket: '',
+                Bucket: 'testeeeeee',
                 Key: fileName,
                 Body: fileContent,
+                ACL: 'public-read',
             };
 
             const response = await this.s3.putObject(params).promise();

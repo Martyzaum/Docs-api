@@ -17,9 +17,9 @@ export class SqsWorker {
         private readonly docsRepository: DocsRepository,
     ) {
         this.sqs = new SQS({
-            region: 'us-east-1', // Substitua pela região apropriada
-            accessKeyId: 'AKIAWGTR4I7M5F46BGWP', // Substitua pela sua chave de acesso
-            secretAccessKey: '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', // Substitua pelo seu segredo de acesso
+            region: 'us-east-1', 
+            accessKeyId: process.env.ACCESS_KEY_ID,
+            secretAccessKey: process.env.PRIVATE_KEY,
         });
     }
 
