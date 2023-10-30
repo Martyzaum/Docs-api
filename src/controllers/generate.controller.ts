@@ -12,20 +12,26 @@ export class GenerateController {
     @Post('doc-in-pdf')
     async generateDocInPdf(@Req() req: Request, @Res() res: Response) {
         try {
-            const data = await this.sqsService.sendMessage(JSON.stringify(req.body));
-            if (data['status'] == 'error') {
-                return res.status(500).json({ status: 'error', message: data['message'] });
+            const sqs = await this.sqsService.sendMessage(JSON.stringify(req.body));
+            if (sqs['status'] == 'error') {
+                return res.status(500).json({ status: 'error', message: sqs['message'] });
             }
 
-            const dataSaved = await this.docsRepository.getDocument(data.id);
+            let dataSaved = {
+                data : null
+            }
+
+            let tries = 0;
+            while (dataSaved.data == null) {
+                dataSaved = await this.docsRepository.getDocument(sqs.id);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
             if (dataSaved['status'] == 'error') {
                 return res.status(500).json({ status: 'error', message: dataSaved['message'] });
             }
 
-            setTimeout(() => {
-                return res.status(200).json({ status: 'success', message: 'sended to queue', data: dataSaved });
-            }, 5500);
-
+            return res.status(200).json({ status: 'success', message: 'sended to queue', data: dataSaved })
         } catch (error) {
             return res.status(500).json({ status: 'error', message: error.message });
         }

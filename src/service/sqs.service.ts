@@ -22,6 +22,7 @@ export class SqsService {
             };
 
             const response = await this.sqs.sendMessage(params).promise();
+            console.log('response', response)
 
             return { status: 'success', message: 'sended to queue', id: response.MessageId };
         } catch (error) {

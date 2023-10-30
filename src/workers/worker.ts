@@ -17,7 +17,7 @@ export class SqsWorker {
         private readonly docsRepository: DocsRepository,
     ) {
         this.sqs = new SQS({
-            region: 'us-east-1', 
+            region: 'us-east-1',
             accessKeyId: process.env.ACCESS_KEY_ID,
             secretAccessKey: process.env.PRIVATE_KEY,
         });
@@ -34,28 +34,19 @@ export class SqsWorker {
 
         if (response.Messages && response.Messages.length > 0) {
             for (const message of response.Messages) {
-                // console.log('Received Message:');
-                // console.log('Message ID:', message.MessageId);
-                // console.log('Receipt Handle:', message.ReceiptHandle);
-                // console.log('Message Body:', message.Body);
-
-                console.log('mensagem recebida')
                 const { template, fileName, fields } = JSON.parse(message.Body);
                 const docx = await this.docxService.fillDocx(template, fileName, fields)
-                console.log('documento preenchido')
                 if (docx['status'] == 'error') {
                     return
                 }
 
-                console.log('convertendo para pdf')
                 const pdf = await this.pdfService.ConvertDocxToPdf(docx);
-                console.log(pdf)
                 if (pdf['status'] == 'error') {
                     return
                 }
 
-                const saveInS3 = await this.s3Service.saveFile(fileName, pdf.data);
-                console.log(saveInS3)
+                const pdfBuffer = Buffer.from(pdf.data, 'base64');
+                const saveInS3 = await this.s3Service.saveFile(fileName + '.pdf', pdfBuffer);
                 if (saveInS3['status'] == 'error') {
                     return
                 }
@@ -66,7 +57,6 @@ export class SqsWorker {
                 }
 
                 const saveInMongo = await this.docsRepository.addDocument(docData);
-                console.log()
                 if (saveInMongo['status'] == 'error') {
                     return
                 }

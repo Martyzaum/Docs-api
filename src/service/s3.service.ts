@@ -7,7 +7,7 @@ export class S3Service {
 
     constructor() {
         this.s3 = new S3({
-            region: 'us-west-2', 
+            region: 'us-east-1', 
             accessKeyId: process.env.ACCESS_KEY_ID,
             secretAccessKey: process.env.PRIVATE_KEY,
         });
@@ -16,17 +16,18 @@ export class S3Service {
     async saveFile(fileName, fileContent) {
         try {
             const params = {
-                Bucket: 'testeeeeee',
+                Bucket: 'docs-worker',
                 Key: fileName,
                 Body: fileContent,
                 ACL: 'public-read',
             };
 
-            const response = await this.s3.putObject(params).promise();
-
-            return { status: 'success', message: 'Arquivo salvo com sucesso', data: response };
+            //insert on s3 and return the public link
+            const response = await this.s3.upload(params).promise();
+            return { status: 'success', message: 'File saved', data: response.Location };
 
         } catch (error) {
+            console.log(error)
             return { status: 'error', message: error.message }
         }
     }
